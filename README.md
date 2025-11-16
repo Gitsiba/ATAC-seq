@@ -4,16 +4,6 @@ Modular and reproducible pipeline for **ATAC-seq (Assay for Transposase-Accessib
 This workflow takes raw FASTQ files through preprocessing, alignment, peak calling, QC, and visualization, producing publication‑ready outputs.
 
 ---
-
-## 📂 Repository Structure
-ATAC-seq/ 
-├── data/ # Example input FASTQ files 
-├── env/ # Conda environment files 
-├── plots/ # QC and summary plots 
-├── results/ # Alignment, peaks, QC metrics 
-├── scripts/ # Python and R analysis scripts 
-└── README.md # Project documentation
-
 ---
 
 ## 🚀 Features
