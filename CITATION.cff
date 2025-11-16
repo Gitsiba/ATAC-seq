@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+title: "ATAC-seq Pipeline"
+message: "If you use this pipeline, please cite it as below."
+authors:
+  - family-names: "Siba"
+    given-names: "G."
+date-released: 2025-11-16
+version: "1.0.0"
+doi: ""
+url: "https://github.com/Gitsiba/ATAC-seq"
