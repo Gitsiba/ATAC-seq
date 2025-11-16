@@ -1,0 +1,20 @@
+name: atac
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.10
+  - fastqc
+  - fastp
+  - bowtie2
+  - samtools
+  - picard
+  - macs2
+  - bedtools
+  - numpy
+  - matplotlib
+  - r-base
+  - bioconductor-chipseeker
+  - bioconductor-deseq2
+
