@@ -9,4 +9,3 @@ dds <- DESeqDataSetFromMatrix(countData=counts,
 dds <- DESeq(dds)
 res <- results(dds)
 plotMA(res)
-R
