@@ -2,6 +2,8 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+print("Hello! Welcome to the ATAC-seq QC Metrics and Plots Generator")
+
 os.makedirs("plots", exist_ok=True)
 
 # 1) Insert size distribution
