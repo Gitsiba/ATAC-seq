@@ -22,11 +22,22 @@ Clone the repository:
 ```bash
 git clone https://github.com/Gitsiba/ATAC-seq.git
 cd ATAC-seq
-conda env create -f env/environment.yml
-conda activate atacseq
-Usage
+conda env create -f environment.yml
+conda activate atac
+```
+
+---
+
+## 📋 Usage
 
 Run the pipeline step by step or via batch runner:
-# Example: alignment + peak calling
-python scripts/07_qc_metrics_and_plots.py --input data/sam_R1.fastq --output results/
-Rscript scripts/annotate_peaks.R results/peaks/sample_peaks.narrowPeak
+```bash
+# Example: QC metrics and plots
+python 07_qc_metrics_and_plots.py
+
+# Example: annotate peaks
+Rscript annotate_peaks.R
+
+# Example: differential accessibility analysis
+Rscript Differential_accessibility.R
+```
