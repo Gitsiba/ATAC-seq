@@ -28,7 +28,7 @@ jobs:
       - name: Lint workflow and configuration
         env:
           NXF_SYNTAX_PARSER: v2
-        run: nextflow lint main.nf nextflow.config
+        run: nextflow lint .
 
       - name: Validate resolved configuration
         run: nextflow config -flat .
