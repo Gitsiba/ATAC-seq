@@ -1,0 +1,3 @@
+sample,fastq_1,fastq_2
+sample_A,data/sample_A_R1.fastq.gz,data/sample_A_R2.fastq.gz
+sample_B,data/sample_B_R1.fastq.gz,data/sample_B_R2.fastq.gz
