@@ -33,7 +33,7 @@ sample_A,data/sample_A_R1.fastq.gz,data/sample_A_R2.fastq.gz
 
 Paths are resolved relative to the directory from which Nextflow is launched. Sample IDs must contain letters, numbers, dot, underscore, or hyphen. Use paired-end reads; single-end libraries are not supported.
 
-## Run
+## Run with your data
 
 ```bash
 nextflow run main.nf \
@@ -45,6 +45,23 @@ nextflow run main.nf \
 ```
 
 Use `--genome_size mm` for the MACS2 mouse preset, or provide an appropriate effective genome size for another organism. The FASTA must match the genome size and any annotation used downstream.
+
+## Smoke test
+
+The repository includes a deterministic synthetic paired-end fixture generator. It creates a small random reference and read pairs enriched in one region; these are **software test data, not real biological data**.
+
+Run locally with Python 3.8+ and Nextflow/Conda installed:
+
+```bash
+python tests/smoke/generate_fixture.py
+nextflow run main.nf -profile conda \
+  --samplesheet tests/smoke/samplesheet.csv \
+  --reference_fasta tests/smoke/reference.fa \
+  --genome_size 10000 \
+  --outdir results
+```
+
+The GitHub Actions smoke-test job runs the same workflow and checks for the deduplicated BAM/index, flagstat, MACS2 peak files, and MultiQC report. Review the **Actions** tab for the actual result. A passing smoke test demonstrates basic software integration only; it does not establish biological validity or production readiness.
 
 ## Main outputs
 
@@ -60,7 +77,7 @@ Nextflow work directories are retained for resume support. Do not commit private
 
 ## CI validation
 
-GitHub Actions runs `nextflow lint` against `main.nf` and `nextflow.config`, then checks that Nextflow can resolve the configuration. This validates syntax/configuration only; it does **not** prove the workflow completes on sequencing data. Check the Actions tab and run a small end-to-end test before treating the pipeline as validated.
+GitHub Actions runs `nextflow lint` against `main.nf` and `nextflow.config`, checks that Nextflow can resolve the configuration, and attempts a tiny synthetic end-to-end run. CI results are the source of truth for whether these checks pass; they have not been independently executed in this editing session.
 
 ## Limitations and interpretation
 
@@ -70,15 +87,14 @@ GitHub Actions runs `nextflow lint` against `main.nf` and `nextflow.config`, the
 - MACS2 uses `--keep-dup all` because duplicates have already been removed upstream.
 - Does not accept a control/input BAM.
 - The default genome size is `hs`; explicitly set it for the target organism.
-- Must be tested on a small dataset and reviewed biologically before drawing research conclusions.
+- Must be tested on real, representative data and reviewed biologically before drawing research conclusions.
 
 ## Next engineering milestones
 
-1. Add a tiny end-to-end fixture with a small reference and assert expected outputs.
-2. Add blacklist filtering and tested TSS/FRiP metrics.
-3. Add replicate metadata, consensus peaks, and a validated differential-accessibility module.
-4. Add pinned container images, parameter schema, and software bill of materials.
-5. Compare outputs and parameters against [nf-core/atacseq](https://github.com/nf-core/atacseq) and the [ENCODE ATAC-seq pipeline](https://github.com/ENCODE-DCC/atac-seq-pipeline).
+1. Add blacklist filtering and tested TSS/FRiP metrics.
+2. Add replicate metadata, consensus peaks, and a validated differential-accessibility module.
+3. Add pinned container images, parameter schema, and software bill of materials.
+4. Compare outputs and parameters against [nf-core/atacseq](https://github.com/nf-core/atacseq) and the [ENCODE ATAC-seq pipeline](https://github.com/ENCODE-DCC/atac-seq-pipeline).
 
 ## References
 
