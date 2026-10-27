@@ -1,1 +1,2 @@
-QC metrics placeholder
+SYNTHETIC PLACEHOLDER ONLY
+No experimental QC metrics are recorded in this file.
