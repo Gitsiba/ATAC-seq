@@ -7,25 +7,6 @@ params.genome_size = 'hs'
 params.min_mapq = 30
 params.outdir = 'results'
 
-if (!params.samplesheet) error "Missing --samplesheet (CSV columns: sample,fastq_1,fastq_2)"
-if (!params.reference_fasta) error "Missing --reference_fasta (reference FASTA)"
-if (!file(params.samplesheet).exists()) error "Samplesheet not found: ${params.samplesheet}"
-if (!file(params.reference_fasta).exists()) error "Reference FASTA not found: ${params.reference_fasta}"
-
-Channel.fromPath(params.samplesheet)
-    .splitCsv(header: true)
-    .map { row ->
-        if (!row.sample || !row.fastq_1 || !row.fastq_2)
-            error "Each samplesheet row must contain sample, fastq_1, and fastq_2"
-        def sample = row.sample.toString().trim()
-        if (!(sample ==~ /[A-Za-z0-9][A-Za-z0-9._-]*/))
-            error "Invalid sample ID '${sample}'. Use letters, numbers, dot, underscore, or hyphen."
-        tuple([id: sample],
-              file(row.fastq_1.toString().trim(), checkIfExists: true),
-              file(row.fastq_2.toString().trim(), checkIfExists: true))
-    }
-    .set { read_pairs }
-
 process FASTQC_RAW {
     tag "${meta.id}"
     cpus 2
@@ -153,6 +134,24 @@ process MULTIQC {
 }
 
 workflow {
+    if (!params.samplesheet) error "Missing --samplesheet (CSV columns: sample,fastq_1,fastq_2)"
+    if (!params.reference_fasta) error "Missing --reference_fasta (reference FASTA)"
+    if (!file(params.samplesheet).exists()) error "Samplesheet not found: ${params.samplesheet}"
+    if (!file(params.reference_fasta).exists()) error "Reference FASTA not found: ${params.reference_fasta}"
+
+    read_pairs = channel.fromPath(params.samplesheet)
+        .splitCsv(header: true)
+        .map { row ->
+            if (!row.sample || !row.fastq_1 || !row.fastq_2)
+                error "Each samplesheet row must contain sample, fastq_1, and fastq_2"
+            def sample = row.sample.toString().trim()
+            if (!(sample ==~ /[A-Za-z0-9][A-Za-z0-9._-]*/))
+                error "Invalid sample ID '${sample}'. Use letters, numbers, dot, underscore, or hyphen."
+            tuple([id: sample],
+                  file(row.fastq_1.toString().trim(), checkIfExists: true),
+                  file(row.fastq_2.toString().trim(), checkIfExists: true))
+        }
+
     raw_qc = FASTQC_RAW(read_pairs)
     trimmed = TRIM_READS(read_pairs)
     trimmed_qc = FASTQC_TRIMMED(trimmed.reads)
@@ -163,7 +162,7 @@ workflow {
     qc_inputs = raw_qc.reports
         .flatten()
         .mix(trimmed_qc.reports.flatten())
-        .mix(trimmed.qc.flatMap { it })
+        .mix(trimmed.qc.flatMap { item -> item })
         .mix(aligned.flagstat)
         .collect()
     MULTIQC(qc_inputs)
