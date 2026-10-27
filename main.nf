@@ -29,6 +29,7 @@ process FASTQC_RAW {
     tag "${meta.id}"
     cpus 2
     conda 'bioconda::fastqc=0.12.1'
+    publishDir "${params.outdir}/qc/raw", mode: 'copy'
     input:
     tuple val(meta), path(read1), path(read2)
     output:
@@ -43,6 +44,7 @@ process TRIM_READS {
     tag "${meta.id}"
     cpus 2
     conda 'bioconda::fastp=0.23.4'
+    publishDir "${params.outdir}/trimmed", mode: 'copy'
     input:
     tuple val(meta), path(read1), path(read2)
     output:
@@ -63,6 +65,7 @@ process FASTQC_TRIMMED {
     tag "${meta.id}"
     cpus 2
     conda 'bioconda::fastqc=0.12.1'
+    publishDir "${params.outdir}/qc/trimmed", mode: 'copy'
     input:
     tuple val(meta), path(read1), path(read2)
     output:
@@ -77,6 +80,7 @@ process BUILD_INDEX {
     tag 'reference'
     cpus 4
     conda 'bioconda::bowtie2=2.5.4'
+    publishDir "${params.outdir}/reference_index", mode: 'copy'
     input:
     path reference_fasta
     output:
@@ -91,6 +95,7 @@ process ALIGN_AND_DEDUP {
     tag "${meta.id}"
     cpus 4
     conda 'bioconda::bowtie2=2.5.4 bioconda::samtools=1.20'
+    publishDir "${params.outdir}/alignment", mode: 'copy'
     input:
     tuple val(meta), path(read1), path(read2)
     path index_files
@@ -116,6 +121,7 @@ process CALL_PEAKS {
     tag "${meta.id}"
     cpus 2
     conda 'bioconda::macs2=2.2.9.1'
+    publishDir "${params.outdir}/peaks", mode: 'copy'
     input:
     tuple val(meta), path(bam), path(bai)
     output:
@@ -133,6 +139,7 @@ process MULTIQC {
     tag 'multiqc'
     cpus 1
     conda 'bioconda::multiqc=1.25.2'
+    publishDir "${params.outdir}/qc/multiqc", mode: 'copy'
     input:
     path reports
     output:
@@ -153,8 +160,9 @@ workflow {
     CALL_PEAKS(aligned.bam)
 
     qc_inputs = raw_qc.reports
-        .mix(trimmed_qc.reports)
-        .mix(trimmed.qc)
+        .flatten()
+        .mix(trimmed_qc.reports.flatten())
+        .mix(trimmed.qc.flatMap { it })
         .mix(aligned.flagstat)
         .collect()
     MULTIQC(qc_inputs)
