@@ -4,6 +4,7 @@ nextflow.enable.dsl = 2
 params.samplesheet = null
 params.reference_fasta = null
 params.genome_size = 'hs'
+params.min_mapq = 30
 params.outdir = 'results'
 
 if (!params.samplesheet) error "Missing --samplesheet (CSV columns: sample,fastq_1,fastq_2)"
@@ -106,7 +107,7 @@ process ALIGN_AND_DEDUP {
     """
     bowtie2 --very-sensitive --no-mixed --no-discordant -X 2000 \
       -x reference -1 ${read1} -2 ${read2} -p ${task.cpus} 2> ${meta.id}.bowtie2.log \
-      | samtools view -u - \
+      | samtools view -u -f 2 -F 3844 -q ${params.min_mapq} - \
       | samtools sort -n -@ ${task.cpus} -o ${meta.id}.name.bam -
 
     samtools fixmate -m ${meta.id}.name.bam ${meta.id}.fixmate.bam
