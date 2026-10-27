@@ -62,7 +62,7 @@ Nextflow work directories are retained for resume support. Do not commit private
 
 - Calls peaks separately per sample; it does not create a consensus peak set or perform differential accessibility.
 - Does not calculate TSS enrichment or FRiP, apply a genome blacklist, or automatically choose a reference annotation.
-- Removes duplicates with `samtools markdup -r`; confirm that policy is suitable for the library and study design.
+- Filters for proper pairs with SAMtools, applies a configurable MAPQ threshold (`--min_mapq`, default 30), excludes unmapped/secondary/QC-fail/duplicate-flagged/supplementary records, then removes duplicates with `samtools markdup -r`. Confirm this policy is suitable for the library and study design.
 - MACS2 uses `--keep-dup all` because duplicates have already been removed upstream.
 - Does not accept a control/input BAM.
 - The default genome size is `hs`; explicitly set it for the target organism.
@@ -71,7 +71,7 @@ Nextflow work directories are retained for resume support. Do not commit private
 ## Next engineering milestones
 
 1. Add CI syntax validation and a tiny end-to-end fixture with a small reference.
-2. Add blacklist filtering, configurable MAPQ, and tested TSS/FRiP metrics.
+2. Add blacklist filtering and tested TSS/FRiP metrics.
 3. Add replicate metadata, consensus peaks, and a validated differential-accessibility module.
 4. Add pinned container images, parameter schema, and software bill of materials.
 5. Compare outputs and parameters against [nf-core/atacseq](https://github.com/nf-core/atacseq) and the [ENCODE ATAC-seq pipeline](https://github.com/ENCODE-DCC/atac-seq-pipeline).
