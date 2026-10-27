@@ -1,0 +1,23 @@
+name: Smoke tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  python-smoke-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install test dependencies
+        run: python -m pip install numpy matplotlib
+      - name: Compile Python script
+        run: python -m py_compile 07_qc_metrics_and_plots.py
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Check demo plotting mode
+        run: python 07_qc_metrics_and_plots.py --demo --outdir "$RUNNER_TEMP/atac-demo"
