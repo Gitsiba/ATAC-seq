@@ -1,0 +1,26 @@
+# Sequencing data and large intermediate files
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
+*.bam
+*.bai
+*.sam
+*.cram
+*.crai
+*.bed
+*.bigWig
+*.bw
+
+# Workflow outputs and local execution cache
+results/
+work/
+.nextflow*
+.pipeline_info/
+*.bt2
+*.bt2l
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/

@@ -1,0 +1,80 @@
+name: Nextflow validation
+
+on:
+  push:
+    branches: ["main", "feature/**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint Nextflow scripts and config
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Nextflow
+        uses: nf-core/setup-nextflow@v3
+        with:
+          version: latest
+
+      - name: Show Nextflow version
+        run: nextflow -version
+
+      - name: Lint workflow and configuration
+        env:
+          NXF_SYNTAX_PARSER: v2
+        run: nextflow lint .
+
+      - name: Validate resolved configuration
+        run: nextflow config -flat .
+
+  smoke-test:
+    name: Tiny synthetic end-to-end run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Miniforge for process Conda environments
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          auto-activate-base: true
+          conda-remove-defaults: true
+
+      - name: Set up Nextflow
+        uses: nf-core/setup-nextflow@v3
+        with:
+          version: latest
+
+      - name: Generate deterministic synthetic reads
+        run: python tests/smoke/generate_fixture.py
+
+      - name: Run pipeline on tiny fixture
+        env:
+          NXF_ANSI_LOG: "false"
+        run: |
+          nextflow run main.nf -profile conda \
+            --samplesheet tests/smoke/samplesheet.csv \
+            --reference_fasta tests/smoke/reference.fa \
+            --genome_size 10000 \
+            --outdir results
+
+      - name: Assert expected outputs exist
+        run: |
+          test -s results/alignment/sample_A.dedup.bam
+          test -s results/alignment/sample_A.dedup.bam.bai
+          test -s results/alignment/sample_A.flagstat.txt
+          test -f results/peaks/sample_A_peaks.narrowPeak
+          test -f results/peaks/sample_A_summits.bed
+          test -f results/qc/multiqc/multiqc_report.html

@@ -125,6 +125,12 @@ The tests validate script behavior on tiny synthetic fixtures; they do not estab
 
 These established pipelines are useful references for a future fully automated, production-style workflow. This repository is an independent learning/toolkit project and should not be represented as ENCODE-validated.
 
+## Nextflow workflow
+
+A paired-end starter workflow now orchestrates raw/trimmed FastQC, fastp trimming, Bowtie 2 indexing/alignment, SAMtools filtering and duplicate removal, MACS2 peak calling, and MultiQC aggregation. It publishes outputs under the selected output directory and records Nextflow execution metadata.
+
+See [docs/NEXTFLOW.md](docs/NEXTFLOW.md) for requirements, the samplesheet format, run commands, outputs, and limitations. This workflow is not yet validated end to end on a real sequencing dataset and does not yet perform consensus peak calling or differential accessibility.
+
 ## License
 
 See [LICENSE](LICENSE).

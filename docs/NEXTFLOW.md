@@ -1,0 +1,103 @@
+# Nextflow ATAC-seq workflow
+
+This is a paired-end, single-sample peak-calling starter workflow for demonstrating reproducible workflow engineering. It has **not** been validated as a production clinical or ENCODE-equivalent pipeline.
+
+## Workflow stages
+
+1. FastQC on raw paired-end reads.
+2. fastp adapter and quality trimming.
+3. FastQC on trimmed reads.
+4. Bowtie 2 index construction from the supplied reference FASTA.
+5. Paired-end alignment with Bowtie 2.
+6. SAMtools name sorting, fixmate, coordinate sorting, duplicate removal, BAM indexing, and flagstat.
+7. MACS2 peak calling in paired-end mode (`BAMPE`).
+8. MultiQC aggregation of available FastQC, fastp, and flagstat reports.
+
+Nextflow execution timeline, report, trace, and DAG are enabled in `nextflow.config`.
+
+## Requirements
+
+- Nextflow 24.04 or newer and a compatible Java runtime.
+- Conda/Mamba for `-profile conda` mode.
+- Paired-end FASTQ files and a reference FASTA; use the same genome build for all samples.
+- Adequate disk space for reference indexes and intermediate BAMs.
+
+## Input sheet
+
+Copy `samplesheet.example.csv` and replace paths. The required CSV header is exactly:
+
+```csv
+sample,fastq_1,fastq_2
+sample_A,data/sample_A_R1.fastq.gz,data/sample_A_R2.fastq.gz
+```
+
+Paths are resolved relative to the directory from which Nextflow is launched. Sample IDs must contain letters, numbers, dot, underscore, or hyphen. Use paired-end reads; single-end libraries are not supported.
+
+## Run with your data
+
+```bash
+nextflow run main.nf \
+  -profile conda \
+  --samplesheet samplesheet.csv \
+  --reference_fasta /path/to/reference.fa \
+  --genome_size hs \
+  --outdir results
+```
+
+Use `--genome_size mm` for the MACS2 mouse preset, or provide an appropriate effective genome size for another organism. The FASTA must match the genome size and any annotation used downstream.
+
+## Smoke test
+
+The repository includes a deterministic synthetic paired-end fixture generator. It creates a small random reference and read pairs enriched in one region; these are **software test data, not real biological data**.
+
+Run locally with Python 3.8+ and Nextflow/Conda installed:
+
+```bash
+python tests/smoke/generate_fixture.py
+nextflow run main.nf -profile conda \
+  --samplesheet tests/smoke/samplesheet.csv \
+  --reference_fasta tests/smoke/reference.fa \
+  --genome_size 10000 \
+  --outdir results
+```
+
+The GitHub Actions smoke-test job runs the same workflow and checks for the deduplicated BAM/index, flagstat, MACS2 peak files, and MultiQC report. Review the **Actions** tab for the actual result. A passing smoke test demonstrates basic software integration only; it does not establish biological validity or production readiness.
+
+## Main outputs
+
+- Raw and trimmed FastQC HTML/ZIP reports.
+- fastp HTML and JSON reports.
+- Deduplicated coordinate-sorted BAM and BAI files.
+- SAMtools flagstat summaries.
+- MACS2 narrowPeak, summits, and peak-table outputs.
+- MultiQC HTML report and supporting data.
+- Nextflow execution report, timeline, trace, and DAG under `results/pipeline_info/`.
+
+Nextflow work directories are retained for resume support. Do not commit private sequencing data or large FASTQ/BAM outputs.
+
+## CI validation
+
+GitHub Actions runs `nextflow lint` against `main.nf` and `nextflow.config`, checks that Nextflow can resolve the configuration, and attempts a tiny synthetic end-to-end run. CI results are the source of truth for whether these checks pass; they have not been independently executed in this editing session.
+
+## Limitations and interpretation
+
+- Calls peaks separately per sample; it does not create a consensus peak set or perform differential accessibility.
+- Does not calculate TSS enrichment or FRiP, apply a genome blacklist, or automatically choose a reference annotation.
+- Filters for proper pairs with SAMtools, applies a configurable MAPQ threshold (`--min_mapq`, default 30), excludes unmapped/secondary/QC-fail/duplicate-flagged/supplementary records, then removes duplicates with `samtools markdup -r`. Confirm this policy is suitable for the library and study design.
+- MACS2 uses `--keep-dup all` because duplicates have already been removed upstream.
+- Does not accept a control/input BAM.
+- The default genome size is `hs`; explicitly set it for the target organism.
+- Must be tested on real, representative data and reviewed biologically before drawing research conclusions.
+
+## Next engineering milestones
+
+1. Add blacklist filtering and tested TSS/FRiP metrics.
+2. Add replicate metadata, consensus peaks, and a validated differential-accessibility module.
+3. Add pinned container images, parameter schema, and software bill of materials.
+4. Compare outputs and parameters against [nf-core/atacseq](https://github.com/nf-core/atacseq) and the [ENCODE ATAC-seq pipeline](https://github.com/ENCODE-DCC/atac-seq-pipeline).
+
+## References
+
+- [Nextflow documentation](https://www.nextflow.io/docs/latest/)
+- [nf-core/atacseq](https://github.com/nf-core/atacseq)
+- [ENCODE-DCC ATAC-seq pipeline](https://github.com/ENCODE-DCC/atac-seq-pipeline)
