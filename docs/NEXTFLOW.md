@@ -58,6 +58,10 @@ Use `--genome_size mm` for the MACS2 mouse preset, or provide an appropriate eff
 
 Nextflow work directories are retained for resume support. Do not commit private sequencing data or large FASTQ/BAM outputs.
 
+## CI validation
+
+GitHub Actions runs `nextflow lint` against `main.nf` and `nextflow.config`, then checks that Nextflow can resolve the configuration. This validates syntax/configuration only; it does **not** prove the workflow completes on sequencing data. Check the Actions tab and run a small end-to-end test before treating the pipeline as validated.
+
 ## Limitations and interpretation
 
 - Calls peaks separately per sample; it does not create a consensus peak set or perform differential accessibility.
@@ -70,7 +74,7 @@ Nextflow work directories are retained for resume support. Do not commit private
 
 ## Next engineering milestones
 
-1. Add CI syntax validation and a tiny end-to-end fixture with a small reference.
+1. Add a tiny end-to-end fixture with a small reference and assert expected outputs.
 2. Add blacklist filtering and tested TSS/FRiP metrics.
 3. Add replicate metadata, consensus peaks, and a validated differential-accessibility module.
 4. Add pinned container images, parameter schema, and software bill of materials.
