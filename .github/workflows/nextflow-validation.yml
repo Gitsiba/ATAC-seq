@@ -2,7 +2,7 @@ name: Nextflow validation
 
 on:
   push:
-    branches: ["main", "feature/**"]
+    branches: ["main", "feature/**", "cloud/**"]
   pull_request:
   workflow_dispatch:
 
